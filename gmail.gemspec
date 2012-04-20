@@ -1,6 +1,6 @@
-# -*- ruby -*-
+# -*- encoding: utf-8 -*-
 
-$:.unshift(File.expand_path('../lib', __FILE__))
+$:.push File.expand_path('../lib', __FILE__)
 require 'gmail/version'
 
 Gem::Specification.new do |s|
