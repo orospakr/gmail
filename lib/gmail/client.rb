@@ -14,7 +14,7 @@ module Gmail
       @clients[name] = klass
     end
 
-    def self.new(name, *args)
+    def self.new_client(name, *args)
       if client = @clients[name]
         client.new(*args)
       else
