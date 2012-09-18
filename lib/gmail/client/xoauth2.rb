@@ -13,7 +13,7 @@ module Gmail
       def login(raise_errors=false)
         @imap and @logged_in = (login = @imap.authenticate('XOAUTH2', username, @token)) && login.name == 'OK'
       rescue Exception => e
-        raise_errors and raise AuthorizationError, "Couldn't login to given GMail account: #{username}"        
+        raise_errors and raise AuthorizationError.new(nil), "Couldn't login to given GMail account: #{username}", e.backtrace
       end
 
       def smtp_settings

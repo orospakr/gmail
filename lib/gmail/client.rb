@@ -4,7 +4,7 @@ module Gmail
     class ConnectionError < SocketError; end
     # Raised when given username or password are invalid.
     class AuthorizationError < Net::IMAP::NoResponseError;
-      def self.initialize(response)
+      def initialize(response)
         super(response) if response
       end
 
