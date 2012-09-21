@@ -18,7 +18,7 @@ module Gmail
     end
 
     def google_id
-      @google_id ||= @gmail.conn.fetch(uid, '(X-GM-MSGID)')[0].attr['X-GM-MSGID']
+      @google_id ||= @gmail.conn.uid_fetch(uid, 'X-GM-MSGID')[0].attr['X-GM-MSGID']
     end
    
     def uid
