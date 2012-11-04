@@ -32,4 +32,13 @@ rescue LoadError
   end
 end
 
-task :default => :spec
+task :test => :spec
+task :default => :test
+
+require 'rdoc/task'
+Rake::RDocTask.new do |rdoc|
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "Gmail for Ruby #{Gmail.version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
+end
