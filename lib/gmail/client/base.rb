@@ -199,7 +199,7 @@ module Gmail
       def switch_to_mailbox(mailbox)
         if mailbox
           mailbox = Net::IMAP.encode_utf7(mailbox)
-          conn.select(mailbox)
+          conn.examine(mailbox) # READONLY ACCESS - otherwise any message read will be marked as Seen
         end
         @current_mailbox = mailbox
       end
