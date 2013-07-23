@@ -41,6 +41,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'mail', ">= 2.2.1"
   s.add_dependency 'gmail_xoauth', '>=0.4.1'
 
+  # TODO: can this dependency be made optional?
+  s.add_dependency 'celluloid-net-imap', "~> 0.0.1"
+
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3

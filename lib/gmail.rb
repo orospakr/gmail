@@ -33,7 +33,7 @@ module Gmail
     #     :token => "",
     #     :secret => "")
     #
-    # To use plain authentication mehod you can also call:
+    # To use plain authentication method you can also call:
     #
     #   Gmail.new("foo@gmail.com", "password")
     #
@@ -60,7 +60,27 @@ module Gmail
       end                                                             # end
     }
 
+    # Create a Celluloid::IO-aware Gmail instance.  Authentication
+    # method must always be specified.
+    #
+    # This method will block your Celluloid Task (Fiber) for a little
+    # while while the connection establishes.
+    # 
+    # The block-style call method given for #connect and #connect! is
+    # not available (and you are therefore responsible for closing the
+    # connection), nor is the implicit :plain authentication method
+    # (it must be specified explicitly).
+    def new_on_celluloid!(actor, task_delegator, authtype, auth_params, &closed_handler)
+      client = Gmail::Client.new_client(authtype, *auth_params)
+      
+      client.connect_on_celluloid! actor, task_delegator, &closed_handler
+      client.login!
+
+      client
+    end
+
     alias :connect :new
     alias :connect! :new!
+    alias :connect_on_celluloid! :new_on_celluloid!
   end # << self
 end # Gmail

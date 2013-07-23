@@ -1,5 +1,7 @@
 require 'thread'
 
+require "net/imap"
+
 module Gmail
   module Client
     class Base
@@ -19,6 +21,13 @@ module Gmail
         @username      = fill_username(username)
         @options       = defaults.merge(options)
         @mailbox_mutex = Mutex.new
+
+        # I don't both to use the below switchable IMAP implementation
+        # in all places in this gem.  Namely, inherited exception
+        # types and the UTF-7 codecs, because they are awkward to
+        # inject and Celluloid::Net::IMAP doesn't modify them at any
+        # rate.
+        @imap_implementation = Net::IMAP
       end
       
       # Connect to gmail service. 
@@ -32,6 +41,31 @@ module Gmail
       # This version of connect will raise error on failure...
       def connect!
         connect(true)
+      end
+
+      # Instead of using the stock thread-blocking Net::IMAP, use
+      # Celluloid::Net::IMAP.
+      #
+      # Will either raise ConnectionError (establishment failure), or
+      # call the closed_handler block on connection termination.  In
+      # order to ensure connection state, make sure to handle both of
+      # these exit cases.
+      def connect_on_celluloid!(actor, task_delegator, &closed_handler)
+        # TODO: move this require to top-level, but make it robust
+        # against the celluloid-net-imap gem not being available
+        require "celluloid/net/imap"
+
+        @imap_implementation = Celluloid::Net::IMAP
+
+        begin
+          @imap = @imap_implementation.new(GMAIL_IMAP_HOST,
+                                           task_delegator,
+                                           actor,
+                                           port: GMAIL_IMAP_PORT,
+                                           ssl: true, &closed_handler)
+        rescue SocketError => e
+          raise_errors and raise ConnectionError, "Couldn't establish connection with GMail IMAP service"
+        end
       end
       
       # Return current connection. Log in automaticaly to specified account if 
@@ -198,6 +232,7 @@ module Gmail
       
       def switch_to_mailbox(mailbox)
         if mailbox
+          
           mailbox = Net::IMAP.encode_utf7(mailbox)
           conn.examine(mailbox) # READONLY ACCESS - otherwise any message read will be marked as Seen
         end
