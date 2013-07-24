@@ -1,4 +1,5 @@
 require 'thread'
+require 'resolv'
 
 require "net/imap"
 
@@ -46,6 +47,9 @@ module Gmail
       # Instead of using the stock thread-blocking Net::IMAP, use
       # Celluloid::Net::IMAP.
       #
+      # TODO: should probably done with OO patterns rather than a
+      # separate method.
+      #
       # Will either raise ConnectionError (establishment failure), or
       # call the closed_handler block on connection termination.  In
       # order to ensure connection state, make sure to handle both of
@@ -63,8 +67,8 @@ module Gmail
                                            actor,
                                            port: GMAIL_IMAP_PORT,
                                            ssl: true, &closed_handler)
-        rescue SocketError => e
-          raise_errors and raise ConnectionError, "Couldn't establish connection with GMail IMAP service"
+        rescue SocketError, Resolv::ResolvError => e
+          raise_errors and raise ConnectionError, "Couldn't establish connection with GMail IMAP service: #{e}"
         end
       end
       

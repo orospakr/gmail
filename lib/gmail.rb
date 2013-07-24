@@ -70,8 +70,9 @@ module Gmail
     # not available (and you are therefore responsible for closing the
     # connection), nor is the implicit :plain authentication method
     # (it must be specified explicitly).
-    def new_on_celluloid!(actor, task_delegator, authtype, auth_params, &closed_handler)
-      client = Gmail::Client.new_client(authtype, *auth_params)
+    def new_on_celluloid!(actor, task_delegator, *args, &closed_handler)
+      args.unshift(:plain) unless args.first.is_a?(Symbol)
+      client = Gmail::Client.new_client(*args)
       
       client.connect_on_celluloid! actor, task_delegator, &closed_handler
       client.login!
