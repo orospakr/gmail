@@ -8,6 +8,26 @@ if RUBY_VERSION < "1.8.7"
   require "smtp_tls"
 end
 
+require "gmail_xoauth"
+
+begin
+  require "celluloid/net/imap"
+
+  # inject gmail xoauth's authenticators into Celluloid::Net::IMAP as
+  # well.
+  authenticators = {
+    'XOAUTH' => GmailXoauth::ImapXoauthAuthenticator,
+    'XOAUTH2' => GmailXoauth::ImapXoauth2Authenticator,
+  }
+
+  authenticators.each_pair do |auth_name, auth_implementation|
+    puts "Adding authenticator #{auth_name} : #{auth_implementation}"
+    Celluloid::Net::IMAP.add_authenticator(auth_name, auth_implementation)
+  end
+rescue LoadError
+  # no Celluloid::Net::IMAP
+end
+
 class Object
   def to_imap_date
     Date.parse(to_s).strftime("%d-%B-%Y")

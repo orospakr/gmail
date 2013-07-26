@@ -67,8 +67,8 @@ module Gmail
                                            actor,
                                            port: GMAIL_IMAP_PORT,
                                            ssl: true, &closed_handler)
-        rescue SocketError, Resolv::ResolvError => e
-          raise_errors and raise ConnectionError, "Couldn't establish connection with GMail IMAP service: #{e}"
+        rescue ::Net::IMAP::Error, SocketError, Resolv::ResolvError => e
+          raise ConnectionError, "Couldn't establish connection with GMail IMAP service: #{e}"
         end
       end
       
