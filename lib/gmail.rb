@@ -21,7 +21,7 @@ begin
   }
 
   authenticators.each_pair do |auth_name, auth_implementation|
-    puts "Adding authenticator #{auth_name} : #{auth_implementation}"
+    # puts "Adding authenticator #{auth_name} : #{auth_implementation}"
     Celluloid::Net::IMAP.add_authenticator(auth_name, auth_implementation)
   end
 rescue LoadError
