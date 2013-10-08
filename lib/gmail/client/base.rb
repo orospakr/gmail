@@ -1,4 +1,3 @@
-require 'thread'
 require 'resolv'
 
 require "net/imap"
@@ -23,11 +22,11 @@ module Gmail
         @options       = defaults.merge(options)
         @mailbox_mutex = Mutex.new
 
-        # I don't both to use the below switchable IMAP implementation
-        # in all places in this gem.  Namely, inherited exception
-        # types and the UTF-7 codecs, because they are awkward to
-        # inject and Celluloid::Net::IMAP doesn't modify them at any
-        # rate.
+        # Note that I don't use the switchable IMAP implementation
+        # selector below in all places in this gem.  Namely, inherited
+        # exception types and the UTF-7 codecs, because they are
+        # awkward to inject and Celluloid::Net::IMAP doesn't modify
+        # them at any rate.
         @imap_implementation = Net::IMAP
       end
       
@@ -190,21 +189,19 @@ module Gmail
       #     ...
       #   end
       def mailbox(name, &block)
-        @mailbox_mutex.synchronize do
-          name = name.to_s
-          mailbox = (mailboxes[name] ||= Mailbox.new(self, name))
-          switch_to_mailbox(name) if @current_mailbox != name
+        name = name.to_s
+        mailbox = (mailboxes[name] ||= Mailbox.new(self, name))
+        switch_to_mailbox(name) if @current_mailbox != name
 
-          if block_given?
-            mailbox_stack << @current_mailbox
-            result = block.arity == 1 ? block.call(mailbox) : block.call
-            mailbox_stack.pop
-            switch_to_mailbox(mailbox_stack.last)
-            return result
-          end
-
-          return mailbox
+        if block_given?
+          mailbox_stack << @current_mailbox
+          result = block.arity == 1 ? block.call(mailbox) : block.call
+          mailbox_stack.pop
+          switch_to_mailbox(mailbox_stack.last)
+          return result
         end
+
+        return mailbox
       end
       alias :in_mailbox :mailbox
       alias :in_label :mailbox
